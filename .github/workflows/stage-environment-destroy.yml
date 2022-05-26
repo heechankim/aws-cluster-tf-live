@@ -1,4 +1,4 @@
-name: CI
+name: "Stage Destroy"
 
 on:
   push:
@@ -24,6 +24,10 @@ jobs:
 
       - name: Terraform Setup
         uses: hashicorp/setup-terraform@v2
+      
+      - name: Database Init
+        working-directory: ./stage/data-stores/mysql
+        run: terraform init
 
       - name: Run a multi-line script
         working-directory: ./stage/data-stores/mysql
@@ -43,6 +47,10 @@ jobs:
 
       - name: Terraform Setup
         uses: hashicorp/setup-terraform@v2
+        
+      - name: Webserver Init
+        working-directory: ./stage/services/webserver-cluster
+        run: terraform init
 
       - name: Run a multi-line script
         working-directory: ./stage/services/webserver-cluster
