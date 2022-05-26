@@ -1,0 +1,64 @@
+name: "Terraform staging env apply"
+
+on:
+  push:
+    branches:
+      - stage
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # This workflow contains a single job called "build"
+  StagingPreparation:
+    name: "Preparing Staging environment"
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "ap-northeast-2"
+      TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Terraform Setup
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Database Init
+        run: |
+            cd ~/stage/data-stores/mysql
+            terraform init
+            
+      - name: Database Plan
+        id: db-plan
+        if: github.event_name == 'push'
+        run: terraform plan -no-color
+        
+      - name: Database Plan Status
+        if: steps.db-plan.outcome == 'failure'
+        run: exit 1
+        
+      - name: Database Apply
+        if: github.ref == 'refs/heads/stage' && github.event_name == 'push'
+        run: terraform apply -auto-approve
+        
+      - name: Webserver Init
+        run: |
+          cd ~/stage/services/webserver-cluster
+          terraform init
+          
+      - name: Webserver Plan
+        id: web-plan
+        if: github.event_name == 'push'
+        run: terraform plan
+      
+      - name: Webserver Plan Status
+        if: steps.web-plan.outcome == 'failure'
+        run: exit 1
+        
+      - name: Webserver Apply
+        if: github.ref == 'refs/heads/stage' && github.event_name == 'push'
+        run: terraform apply -auto-approve
+          
