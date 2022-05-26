@@ -2,8 +2,10 @@ provider "aws" {
   region = "ap-northeast-2"
 }
 
+# aws-cluster-tf-module-0.0.1/services/webserver-cluster
+
 module "webserver_cluster" {
-  source = "https://github.com/heechankim/aws-cluster-tf-module/tree/main/services/webserver-cluster?ref=v0.0.1"
+  source = "https://github.com/heechankim/aws-cluster-tf-module/archive/refs/tags/v0.0.1.zip//aws-cluster-tf-module-0.0.1/services/webserver-cluster" 
 
   cluster_name = "webservers-stage"
   db_remote_state_bucket = "chan0-terraform-state"

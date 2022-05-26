@@ -1,0 +1,68 @@
+name: "Terraform staging env apply"
+
+on:
+  push:
+    branches:
+      - stage
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # This workflow contains a single job called "build"
+  StagingPreparation:
+    name: "Preparing Staging environment"
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "ap-northeast-2"
+      TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Terraform Setup
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Database Init
+        working-directory: ./stage/data-stores/mysql
+        run: terraform init
+            
+      - name: Database Plan
+        id: db-plan
+        working-directory: ./stage/data-stores/mysql
+        if: github.event_name == 'push'
+        run: terraform plan -no-color
+        
+      - name: Database Plan Status
+        if: steps.db-plan.outcome == 'failure'
+        working-directory: ./stage/data-stores/mysql
+        run: exit 1
+        
+      - name: Database Apply
+        working-directory: ./stage/data-stores/mysql
+        if: github.ref == 'refs/heads/stage' && github.event_name == 'push'
+        run: terraform apply -auto-approve
+        
+      - name: Webserver Init
+        working-directory: ./stage/services/webserver-cluster
+        run: terraform init
+          
+      - name: Webserver Plan
+        id: web-plan
+        working-directory: ./stage/services/webserver-cluster
+        if: github.event_name == 'push'
+        run: terraform plan
+      
+      - name: Webserver Plan Status
+        working-directory: ./stage/services/webserver-cluster
+        if: steps.web-plan.outcome == 'failure'
+        run: exit 1
+        
+      - name: Webserver Apply
+        working-directory: ./stage/services/webserver-cluster
+        if: github.ref == 'refs/heads/stage' && github.event_name == 'push'
+        run: terraform apply -auto-approve
+          
