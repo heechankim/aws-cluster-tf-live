@@ -28,7 +28,10 @@ jobs:
 
       - name: Database Init
         working-directory: ./stage/data-stores/mysql
-        run: terraform init
+        run: |
+          echo `pwd`
+          echo `ls -la`
+          terraform init
             
       - name: Database Plan
         id: db-plan
