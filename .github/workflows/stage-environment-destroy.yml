@@ -1,0 +1,57 @@
+name: "Stage Destroy"
+
+on:
+  push:
+    branches:
+      - stage-destroy
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  stage-db-clean:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "ap-northeast-2"
+      TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Terraform Setup
+        uses: hashicorp/setup-terraform@v2
+      
+      - name: Database Init
+        working-directory: ./stage/data-stores/mysql
+        run: terraform init
+
+      - name: Database Destroy
+        working-directory: ./stage/data-stores/mysql
+        run: terraform destroy -auto-approve
+        
+  stage-web-clean:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "ap-northeast-2"
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Terraform Setup
+        uses: hashicorp/setup-terraform@v2
+        
+      - name: Webserver Init
+        working-directory: ./stage/services/webserver-cluster
+        run: terraform init
+
+      - name: Webserver Destroy
+        working-directory: ./stage/services/webserver-cluster
+        run: terraform destroy -auto-approve
+  
