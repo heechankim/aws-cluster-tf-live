@@ -27,9 +27,8 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Database Init
-        run: |
-            cd ~/stage/data-stores/mysql
-            terraform init
+        working-directory: ./stage/data-stores/mysql
+        run: terraform init
             
       - name: Database Plan
         id: db-plan
@@ -45,9 +44,8 @@ jobs:
         run: terraform apply -auto-approve
         
       - name: Webserver Init
-        run: |
-          cd ~/stage/services/webserver-cluster
-          terraform init
+        working-directory: ./stage/services/webserver-cluster
+        run: terraform init
           
       - name: Webserver Plan
         id: web-plan
