@@ -24,22 +24,22 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Database Init
-        working-directory: ./stage/data-stores/mysql
+        working-directory: stage/data-stores/mysql
         run: terraform init
             
       - name: Database Plan
         id: db-plan
-        working-directory: ./stage/data-stores/mysql
+        working-directory: stage/data-stores/mysql
         if: github.event_name == 'push'
         run: terraform plan -no-color
         
       - name: Database Plan Status
         if: steps.db-plan.outcome == 'failure'
-        working-directory: ./stage/data-stores/mysql
+        working-directory: stage/data-stores/mysql
         run: exit 1
         
       - name: Database Apply
-        working-directory: ./stage/data-stores/mysql
+        working-directory: stage/data-stores/mysql
         if: github.ref == 'refs/heads/stage' && github.event_name == 'push'
         run: terraform apply -auto-approve
         
@@ -52,22 +52,22 @@ jobs:
       AWS_REGION: "ap-northeast-2"
     steps:
       - name: Webserver Init
-        working-directory: ./stage/services/webserver-cluster
+        working-directory: stage/services/webserver-cluster
         run: terraform init
           
       - name: Webserver Plan
         id: web-plan
-        working-directory: ./stage/services/webserver-cluster
+        working-directory: stage/services/webserver-cluster
         if: github.event_name == 'push'
         run: terraform plan
       
       - name: Webserver Plan Status
-        working-directory: ./stage/services/webserver-cluster
+        working-directory: stage/services/webserver-cluster
         if: steps.web-plan.outcome == 'failure'
         run: exit 1
         
       - name: Webserver Apply
-        working-directory: ./stage/services/webserver-cluster
+        working-directory: stage/services/webserver-cluster
         if: github.ref == 'refs/heads/stage' && github.event_name == 'push'
         run: terraform apply -auto-approve
           
