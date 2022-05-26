@@ -9,10 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # This workflow contains a single job called "build"
-  StagingPreparation:
-    name: "Preparing Staging environment"
-    # The type of runner that the job will run on
+  db-prepare:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -46,6 +43,14 @@ jobs:
         if: github.ref == 'refs/heads/stage' && github.event_name == 'push'
         run: terraform apply -auto-approve
         
+  webserver-prepare:
+    needs: db-prepare
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "ap-northeast-2"
+    steps:
       - name: Webserver Init
         working-directory: ./stage/services/webserver-cluster
         run: terraform init
