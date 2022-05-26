@@ -1,4 +1,4 @@
-name: "Terraform staging env apply"
+name: "Stage Apply"
 
 on:
   push:
