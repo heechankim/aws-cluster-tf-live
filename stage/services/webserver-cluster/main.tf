@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 module "webserver_cluster" {
-  source = "https://github.com/heechankim/aws-cluster-tf-module/tree/main/services/webserver-cluster?ref=v0.0.1"
+  source = "github.com/heechankim/aws-cluster-tf-module/releases/tag/v0.0.1" 
 
   cluster_name = "webservers-stage"
   db_remote_state_bucket = "chan0-terraform-state"
